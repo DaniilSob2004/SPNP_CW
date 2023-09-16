@@ -28,5 +28,12 @@ namespace SPNP
             new ThreadingWindow().ShowDialog();
             Show();
         }
+
+        private void SynchroBtn_Click(object sender, RoutedEventArgs e)
+        {
+            Hide();
+            new SynchroWindow().ShowDialog();
+            Show();
+        }
     }
 }
