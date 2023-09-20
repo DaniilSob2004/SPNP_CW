@@ -35,6 +35,11 @@ namespace SPNP
             // отображается сразу заполнением, а не пошагово (в цикле)
         }
 
+        internal static void Sleep(int v)
+        {
+            throw new NotImplementedException();
+        }
+
         private void BtnStop1_Click(object sender, RoutedEventArgs e)
         {
             // из-за зависания интерфейса, кнопка не нажимается в течении работы кнопки "Start"

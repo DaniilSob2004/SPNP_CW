@@ -35,5 +35,12 @@ namespace SPNP
             new SynchroWindow().ShowDialog();
             Show();
         }
+
+        private void TaskBtn_Click(object sender, RoutedEventArgs e)
+        {
+            Hide();
+            new TaskWindow().ShowDialog();
+            Show();
+        }
     }
 }

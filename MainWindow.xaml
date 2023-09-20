@@ -11,6 +11,7 @@
         <TextBlock FontSize="17" FontWeight="Bold" HorizontalAlignment="Center">Системное программирование</TextBlock>
         <Button x:Name="ThreadingBtn" Content="Многопоточность" Margin="20,8" Click="ThreadingBtn_Click"/>
         <Button x:Name="SynchroBtn" Content="Синхронизация" Margin="20,8" Click="SynchroBtn_Click"/>
+        <Button x:Name="TaskBtn" Content="Многозадачность" Margin="20,8" Click="TaskBtn_Click"/>
     </StackPanel>
     
 </Window>

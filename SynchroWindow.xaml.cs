@@ -37,7 +37,7 @@ namespace SPNP
             {
                 randPercent = (float)Math.Round(r.NextDouble() * 20, 1);  // генерация процента от 0 до 20
                 avgPercent += randPercent;
-                new Thread(AddPercentHW).Start(new MonthData { Month = i + 1, Percent = randPercent });
+                new Thread(AddPercentS1).Start(new MonthData { Month = i + 1, Percent = randPercent });
             }
             logTextBlock.Text += $"Avg percent: {avgPercent / Months}\n";  // выводим средний процент за 12 месяцев
         }
@@ -188,14 +188,15 @@ namespace SPNP
         }
 
         // ДЗ
-        private object mainLocker = new();  // объект сихронизации
+        private object sumHwLocker = new();  // объект сихронизации
+        private object countHwLocker = new();  // объект сихронизации
         private void AddPercentHW(object? data)
         {
             var months = data as MonthData;  // преобразовываем
             Thread.Sleep(200);  // запрос
 
             double localSum;
-            lock (mainLocker)  // блок синхронизации для использ. общего ресурса (поля sum)
+            lock (sumHwLocker)  // блок синхронизации для использ. общего ресурса (поля sum)
             {
                 localSum = sum += (sum * months!.Percent / 100);  // считаем процент и прибавляем
             }
@@ -204,23 +205,37 @@ namespace SPNP
                 logTextBlock.Text += $"{months?.Month}) {localSum} (+{months?.Percent}%)\n";
             });
 
-            bool isLast = false;  // флаг для обозначения вывода результата
-            lock (mainLocker)  // ещё блок синхронизации для использ. общего ресурса (поля threadCount)
+            int localCount;  // для каждого потока создаётся локальная переменная
+            lock (countHwLocker)  // ещё блок синхронизации для использ. общего ресурса (поля threadCount)
             {
-                threadCount--;
-                Thread.Sleep(1);
-                if (threadCount == 0)  // если это последний поток, устанавливаем флаг
-                {
-                    isLast = true;
-                }
+                localCount = --threadCount;
             }
-            if (isLast)
+            Thread.Sleep(1);
+            if (localCount == 0)  // если это последний поток, то выводим результат
             {
                 Dispatcher.Invoke(() =>
                 {
                     logTextBlock.Text += $"------------------\nresult = {sum}\n";  // вывод результата
                 });
             }
+        }
+
+
+        // семафоры
+        private Semaphore semaphore = new Semaphore(2, 2);  // кол-во свободных, макс. кол-во
+        private void AddPercentS1(object? data)
+        {
+            var monthData = data as MonthData;  // преобразование
+
+            semaphore.WaitOne();  // уменьшаем свободные места, если нет свободных мест, то ждём
+            Thread.Sleep(1000);
+            double localSum = sum *= 1.1;
+            semaphore.Release();  // освобождаем одну очередь
+
+            Dispatcher.Invoke(() =>
+            {
+                logTextBlock.Text += $"{monthData?.Month}) {localSum}\n";
+            });
         }
 
         class MonthData
