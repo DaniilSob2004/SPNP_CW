@@ -1,3 +1,12 @@
+ - HW4:
+    - Реализовать отличие задач для методов:
+    	- RunProgressCancellable
+        - RunProgressWaitable
+        - RunProgress (с использованием Task.Run)
+    - Добавить блоки <кнопка – 3 ПБ – кнопка>, для иллюстрации работы каждого из методов с отменой
+
+![HW4](https://github.com/DaniilSob2004/SPNP_CW/assets/106149184/f21cd579-0dba-4290-88a3-34a463d67314)
+
  - HW3:
     - С помощью многозадачности реализовать след. схему:
         - Есть 3 ProgressBar и 2 кнопки
