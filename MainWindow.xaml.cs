@@ -42,5 +42,12 @@ namespace SPNP
             new TaskWindow().ShowDialog();
             Show();
         }
+
+        private void CancellingBtn_Click(object sender, RoutedEventArgs e)
+        {
+            Hide();
+            new CancelWindow().ShowDialog();
+            Show();
+        }
     }
 }
