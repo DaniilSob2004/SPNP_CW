@@ -27,6 +27,7 @@ namespace SPNP
             this.DataContext = this;
         }
 
+
         private void ShowProcesses_Click(object sender, RoutedEventArgs e)
         {
             Process[] processes = Process.GetProcesses();
@@ -50,16 +51,6 @@ namespace SPNP
                 item?.Items.Add(subItem);
             }
         }
-
-        /*
-         ddl - это динамическая библиотека, которая хранит скомпилированные ф-ции, которые могут выполняться другой программой. Она не имеет точки запуска.
-         C# exe - это не совсем настоящий exe, это инструкция для .Net, и он выполянется в управляемом коде(есть сборщик мусора, git-компилятор, можно декомпилировать)
-         C++ exe - это настоящий exe с двоичным кодом.
-         Маршализация - передаёт данные из управляемого кода в неуправляемый и наоборот.
-         Процесс - системный ресурс, контейнер для потоков. С помощью процессов достигается независимость разных программ от ресурсов (занятыми другими процессами).
-                   Эту задачу берёт на себя ОС, процессы в свою очередь работают как будто они одни на ПК.
-         COM - это набор библиотек, расширенных библиотек, не .Net (но подключить можно попробовать).
-        */
 
         private void TreeViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
@@ -219,7 +210,7 @@ namespace SPNP
         private double GetPercentMemory(Process process)
         {
             // получаем кол-во памяти в процессе относительно общего кол-ва памяти во всех процессах
-            return Math.Round(GetProcessorTimeInSeconds(process) * 100 / totalSecCpuTime, 2);
+            return Math.Round(GetProcessorTimeInSeconds(process) * 100 / totalMemoryMB, 2);
         }
 
         #endregion
