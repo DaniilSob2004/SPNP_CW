@@ -1,0 +1,62 @@
+﻿<Window x:Class="SPNP.ProcessWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SPNP"
+        mc:Ignorable="d"
+        Title="ProcessWindow" Height="700" Width="500" WindowStartupLocation="CenterScreen">
+
+    <StackPanel>
+        <TextBlock Text="Процессы" FontSize="16" HorizontalAlignment="Center"/>
+        <Button x:Name="ShowProcesses" Content="Show" Click="ShowProcesses_Click"/>
+        <ScrollViewer MaxHeight="300">
+            <TreeView x:Name="treeViewProc">
+
+            </TreeView>
+        </ScrollViewer>
+
+        <!-- ДЗ -->
+        <Button x:Name="ShowProcessesHW" Content="Show HW" Margin="0 20 0 0" Click="ShowProcessesHW_Click"/>
+        <StackPanel Margin="5">
+            <StackPanel Orientation="Horizontal" Margin="0 0 0 2">
+                <TextBlock Text="Общее кол-во процессов: "/>
+                <TextBlock x:Name="textBlockAmountProcesses" Text="0" Margin="10 0 0 0"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0 0 0 2">
+                <TextBlock Text="Кол-во процессов с одинаковым именем: "/>
+                <TextBlock x:Name="textBlockAmountSameNameProcesses" Text="0" Margin="10 0 0 0"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0 0 0 2">
+                <TextBlock Text="Общее кол-во секунд работы CPU: "/>
+                <TextBlock x:Name="textBlockAmountCPUTime" Text="0" Margin="10 0 0 0"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0 0 0 2">
+                <TextBlock Text="Общее кол-во занятой памяти: "/>
+                <TextBlock x:Name="textBlockAmountMemory" Text="0" Margin="10 0 0 0"/>
+            </StackPanel>
+        </StackPanel>
+        <ScrollViewer MaxHeight="250" MinHeight="100" Margin="1 0 1 0">
+            <ListView x:Name="listViewHWProc" ItemsSource="{Binding Processes}">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="Name" Width="130" DisplayMemberBinding="{Binding ProcessName}"/>
+                        <GridViewColumn Header="Id" Width="70" DisplayMemberBinding="{Binding Id}"/>
+                        <GridViewColumn Header="CPU (%/сек)" Width="130" DisplayMemberBinding="{Binding TotalProcessorTime}"/>
+                        <GridViewColumn Header="RAM (%/Мб)" Width="130" DisplayMemberBinding="{Binding TotalMemory}"/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </ScrollViewer>
+        <ScrollViewer MaxHeight="325" MinHeight="200" Margin="1 5 1 0">
+            <TreeView x:Name="treeViewHWProc">
+                <TreeView.Resources>
+                    <Style TargetType="TreeViewItem">
+                        <EventSetter Event="MouseDoubleClick" Handler="TreeViewItemHW_MouseDoubleClick"/>
+                    </Style>
+                </TreeView.Resources>
+            </TreeView>
+        </ScrollViewer>
+    </StackPanel>
+
+</Window>

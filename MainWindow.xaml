@@ -13,6 +13,7 @@
         <Button x:Name="SynchroBtn" Content="Синхронизация" Margin="20,8" Click="SynchroBtn_Click"/>
         <Button x:Name="TaskBtn" Content="Многозадачность" Margin="20,8" Click="TaskBtn_Click"/>
         <Button x:Name="CancellingBtn" Content="Отмена задачы" Margin="20,8" Click="CancellingBtn_Click"/>
+        <Button x:Name="ProcessBtn" Content="Процессы" Margin="20,8" Click="ProcessBtn_Click"/>
     </StackPanel>
     
 </Window>
