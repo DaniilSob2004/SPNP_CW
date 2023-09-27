@@ -9,15 +9,32 @@
 
     <StackPanel>
         <TextBlock Text="Процессы" FontSize="16" HorizontalAlignment="Center"/>
-        <Button x:Name="ShowProcesses" Content="Show" Click="ShowProcesses_Click"/>
-        <ScrollViewer MaxHeight="300">
-            <TreeView x:Name="treeViewProc">
-
-            </TreeView>
-        </ScrollViewer>
-
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+                <Button x:Name="ShowProcesses" Content="Show" Click="ShowProcesses_Click"/>
+                <ScrollViewer MaxHeight="300">
+                    <TreeView x:Name="treeViewProc"/>
+                </ScrollViewer>
+            </StackPanel>
+            <StackPanel Grid.Column="1">
+                <Button x:Name="BtnStartNotepad" Content="Блокнот" Margin="4" Click="BtnStartNotepad_Click"/>
+                <Button x:Name="BtnStopNotepad" Content="Закрыть блокнот" Margin="4" Click="BtnStopNotepad_Click"/>
+                <Button x:Name="BtnStartEdit" Content="Редактирование" Margin="4" Click="BtnStartEdit_Click"/>
+                <Button x:Name="BtnStartBrowser" Content="Браузер" Margin="4" Click="BtnStartBrowser_Click"/>
+                <Button x:Name="BtnStartCalc" Content="Запуск калькулятора" Margin="4" Click="BtnStartCalc_Click"/>
+                <Button x:Name="BtnStopCalc" Content="Закрыть калькулятор" Margin="4" Click="BtnStopCalc_Click"/>
+                <Button x:Name="BtnStartTaskManager" Content="Запуск диспетчера задач" Margin="4" Click="BtnStartTaskManager_Click"/>
+                <Button x:Name="BtnStopTaskManager" Content="Закрыть диспетчер задач" Margin="4" Click="BtnStopTaskManager_Click"/>
+                <Button x:Name="BtnStartSystemSettings" Content="Запуск параметов системы" Margin="4" Click="BtnStartSystemSettings_Click"/>
+            </StackPanel>
+        </Grid>
+        
         <!-- ДЗ -->
-        <Button x:Name="ShowProcessesHW" Content="Show HW" Margin="0 20 0 0" Click="ShowProcessesHW_Click"/>
+        <Button x:Name="ShowProcessesHW" Content="Show HW" Margin="0 50 0 0" Click="ShowProcessesHW_Click"/>
         <StackPanel Margin="5">
             <StackPanel Orientation="Horizontal" Margin="0 0 0 2">
                 <TextBlock Text="Общее кол-во процессов: "/>

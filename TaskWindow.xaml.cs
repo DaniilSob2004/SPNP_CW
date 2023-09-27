@@ -138,20 +138,3 @@ namespace SPNP
         #endregion
     }
 }
-
-/* 
- Параллельное исполнение, ожидать нельзя, поскольку методы void:
-    RunProgress(ProgressBar10);
-    RunProgress(ProgressBar11, 4);
-    RunProgress(ProgressBar12, 2);
-
- Последовательное выполнение:
-    await RunProgressWaitable(ProgressBar10);
-    await RunProgressWaitable(ProgressBar11, 4);
-    await RunProgressWaitable(ProgressBar12, 2);
-
- Последовательное исполнение с void методами - обертка Task.Run (но в такой схеме требуется Invoke дл UI):
-    await Task.Run(() => RunProgress(ProgressBar10));
-    await Task.Run(() => RunProgress(ProgressBar11, 4));
-    await Task.Run(() => RunProgress(ProgressBar12, 2));
-*/

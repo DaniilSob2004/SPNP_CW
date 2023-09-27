@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Security.Principal;
 
 namespace SPNP
 {
@@ -28,6 +30,7 @@ namespace SPNP
         }
 
 
+        #region Работа с процессами
         private void ShowProcesses_Click(object sender, RoutedEventArgs e)
         {
             Process[] processes = Process.GetProcesses();
@@ -71,6 +74,7 @@ namespace SPNP
                 MessageBox.Show(message);
             }
         }
+        #endregion
 
 
         #region HW Диспетчер задач (Процессы)
@@ -211,6 +215,111 @@ namespace SPNP
         {
             // получаем кол-во памяти в процессе относительно общего кол-ва памяти во всех процессах
             return Math.Round(GetProcessorTimeInSeconds(process) * 100 / totalMemoryMB, 2);
+        }
+
+        #endregion
+
+
+        #region Создание процессов
+        private Process? notepadProcess;
+
+        private void BtnStartNotepad_Click(object sender, RoutedEventArgs e)
+        {
+            notepadProcess ??= Process.Start("notepad.exe");
+        }
+
+        private void BtnStopNotepad_Click(object sender, RoutedEventArgs e)
+        {
+            notepadProcess?.Kill();  // true с подпроцессами - закрывает все блокноты
+            //notepadProcess?.CloseMainWindow();
+            //notepadProcess?.WaitForExit();
+            notepadProcess?.Dispose();  // это unmanage ресурс, сборщик мусора не может освободить память
+            notepadProcess = null;
+        }
+
+        private void BtnStartEdit_Click(object sender, RoutedEventArgs e)
+        {
+            string dir = AppContext.BaseDirectory;  // путь до папки exe файла
+            int binPosition = dir.IndexOf("bin");  // выше папки bin - корень проекта
+            string projectRoot = dir[..binPosition];  // часть пути к bin
+            notepadProcess ??= Process.Start(  // аргументы командной строки передаются вторым параметром
+                "notepad.exe",
+                $"{projectRoot}ProcessWindow.xaml.cs"
+            );
+        }
+
+        private Process? browserProcess;
+        private void BtnStartBrowser_Click(object sender, RoutedEventArgs e)
+        {
+            string filename = @"C:\Program Files\Google\Chrome\Application\chrome.exe";
+            if (File.Exists(filename))
+            {
+                browserProcess ??= Process.Start(filename, "-url https://github.com/DaniilSob2004?tab=repositories");
+            }
+            else
+            {
+                MessageBox.Show("Путь указан неверно!");
+            }
+        }
+
+        #endregion
+
+        #region HW Запустить процесс калькулятор, диспетчер задач и параметры системы(настройки)
+
+        private Process? calcProcess;
+
+        private void BtnStartCalc_Click(object sender, RoutedEventArgs e)
+        {
+            calcProcess ??= Process.Start("calc");
+        }
+
+        private void BtnStopCalc_Click(object sender, RoutedEventArgs e)
+        {
+            Process[] calcProcesses = Process.GetProcessesByName("CalculatorApp");
+            foreach (Process calcProcess in calcProcesses)
+            {
+                calcProcess.Kill();
+            }
+            calcProcess = null;
+        }
+
+
+        private Process? taskManagerProcess;
+
+        private void BtnStartTaskManager_Click(object sender, RoutedEventArgs e)
+        {
+            if (taskManagerProcess is null)
+            {
+                taskManagerProcess = new Process();
+                taskManagerProcess.StartInfo.FileName = "taskmgr.exe";
+                taskManagerProcess.StartInfo.UseShellExecute = true;  // процесс будет запущен с использ. системной оболочки(shell), т.е. система будет решать, как обрабатывать команду
+                // process.StartInfo.Verb = "runas";  // запуск от имени администратора
+                try
+                {
+                    taskManagerProcess.Start();
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("Ошибка при запуске диспетчера задач!");
+                }
+            }
+            else
+            {
+                MessageBox.Show("Уже запущенно!");
+            }
+        }
+
+        private void BtnStopTaskManager_Click(object sender, RoutedEventArgs e)
+        {
+            taskManagerProcess?.CloseMainWindow();
+            taskManagerProcess?.Kill();
+            taskManagerProcess = null;
+        }
+
+
+        private void BtnStartSystemSettings_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start("control.exe", "desk.cpl");
         }
 
         #endregion
