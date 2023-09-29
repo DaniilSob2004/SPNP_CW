@@ -16,10 +16,36 @@ namespace SPNP
 {
     public partial class ThreadingWindow : Window
     {
+        private static Mutex? mutex;
+        private static string mutexName = "TW_MUTEX";
+
         public ThreadingWindow()
         {
+            CheckPreviousLunch();
             InitializeComponent();
         }
+
+        private void CheckPreviousLunch()
+        {
+            try { mutex = Mutex.OpenExisting(mutexName); } catch { }  // пытаемся открыть
+
+            if (mutex is null)  // первый запуск экземпляра окна
+            {
+                mutex = new Mutex(true, mutexName);  // создаём
+            }
+            else if (!mutex.WaitOne(1))  // если mutex закрыт
+            {
+                MessageBox.Show("Экземпляр окна уже запущен!");
+                throw new ApplicationException();
+            }
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            mutex?.ReleaseMutex();  // освобождаем
+        }
+
+
 
         #region BTN1 Без потоков
         private void BtnStart1_Click(object sender, RoutedEventArgs e)

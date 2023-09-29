@@ -22,10 +22,41 @@ namespace SPNP
         public double sum;
         private int threadCount;  // кол-во активных потоков
 
+        private static Mutex mutex = null!;
+        private static string mutexName = "SPNP_SW_MUTEX";
+
         public SynchroWindow()
         {
+            WaitOtherInstance();
             InitializeComponent();
         }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            mutex?.ReleaseMutex();
+        }
+
+        private void WaitOtherInstance()
+        {
+            try { mutex = Mutex.OpenExisting(mutexName); } catch { }
+            if (mutex is null)  // первый запуск
+            {
+                mutex = new Mutex(true, mutexName);
+            }
+            else
+            {
+                if (!mutex.WaitOne(1))  // mutex закрытый
+                {
+                    // запускаем окно таймер
+                    if (new CountDownWindow(mutex).ShowDialog() != true)  // время вышло
+                    {
+                        throw new ApplicationException();
+                    }
+                    mutex.WaitOne();
+                }
+            }
+        }
+
 
         private void StartBtn_Click(object sender, RoutedEventArgs e)
         {

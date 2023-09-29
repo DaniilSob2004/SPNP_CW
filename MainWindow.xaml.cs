@@ -25,14 +25,14 @@ namespace SPNP
         private void ThreadingBtn_Click(object sender, RoutedEventArgs e)
         {
             Hide();
-            new ThreadingWindow().ShowDialog();
+            try { new ThreadingWindow().ShowDialog(); } catch { }
             Show();
         }
 
         private void SynchroBtn_Click(object sender, RoutedEventArgs e)
         {
             Hide();
-            new SynchroWindow().ShowDialog();
+            try { new SynchroWindow().ShowDialog(); } catch { }
             Show();
         }
 
@@ -53,7 +53,7 @@ namespace SPNP
         private void ProcessBtn_Click(object sender, RoutedEventArgs e)
         {
             Hide();
-            new ProcessWindow().ShowDialog();
+            try { new ProcessWindow().ShowDialog(); } catch { }
             Show();
         }
     }

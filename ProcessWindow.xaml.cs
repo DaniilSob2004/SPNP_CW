@@ -12,6 +12,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Security.Principal;
+using System.Threading;
 
 namespace SPNP
 {
@@ -21,12 +22,55 @@ namespace SPNP
         private bool isHandled;
         private double totalSecCpuTime, totalMemoryMB;
 
+        private static Mutex? mutex;
+        private static string mutexName = "SPNP_PW_MUTEX";
+
         public ProcessWindow()
         {
+            CheckPreviousLunch();
+
             InitializeComponent();
             Processes = new ObservableCollection<ProcessInfo>();
             isHandled = false;
             this.DataContext = this;
+        }
+
+        private void CheckPreviousLunch()
+        {
+            // Синхронизация между процессами
+            // Если работа выполняется в одном процессе, то даже разные потоки могут иметь доступ к общим ресурсам,
+            // в том числе ресурсов синхронизации.
+            // Когда язык идёт про разные процессы, то единым способом разделить ресурс представляется ОС.
+            // Она позволяет регистрировать ресурсы по имени, Мьютекс.
+            // Mutex это объект синхронизации, то есть true - закрываем mutex (доступ из других потоков не будет).
+
+            try  // Mutex регистрируется при первом запуске окна
+            {    // поэтому он может быть уже существующим в системе
+                mutex = Mutex.OpenExisting(mutexName);  // пытаемся открыть
+            }
+            catch { }
+
+            if (mutex is not null)  // Mutex зарегистрирован в системе - другой процесс его зарегистрировал
+            {   // хотя он зарегистрирован, он может быть как открытым, так и закрытым
+                if (!mutex.WaitOne(1))  // проверка на закрытость - попытка ждать его небольшое время
+                {   // не позже чем 1 мс WaitOne(1) вернёт false, если Mutex не освободился
+                    // или успешно переведёт его в закрытое состояние (и вернёт true).
+                    // дальнейший код - в случае работы другого окна
+                    MessageBox.Show("Запущен другой экземпляр окна");
+                    // остановить конструктор можно только исключением
+                    throw new ApplicationException();  // не забыть try-catch при создании данного окна
+                }
+            }
+            else  // если Mutex не зарегистрирован, значит это первый запуск окна вообще
+            {
+                // создаём Mutex, первый параметр - true, закрытое состояние, второй - название
+                mutex = new Mutex(true, mutexName);
+            }
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            mutex?.ReleaseMutex();  // освобождаем mutex - другие процессы смогут открывать свои окна
         }
 
 
@@ -264,6 +308,7 @@ namespace SPNP
 
         #endregion
 
+
         #region HW Запустить процесс калькулятор, диспетчер задач и параметры системы(настройки)
 
         private Process? calcProcess;
@@ -315,7 +360,6 @@ namespace SPNP
             taskManagerProcess?.Kill();
             taskManagerProcess = null;
         }
-
 
         private void BtnStartSystemSettings_Click(object sender, RoutedEventArgs e)
         {
