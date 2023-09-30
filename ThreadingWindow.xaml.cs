@@ -27,6 +27,7 @@ namespace SPNP
 
         private void CheckPreviousLunch()
         {
+            // перенести в MainWindow
             try { mutex = Mutex.OpenExisting(mutexName); } catch { }  // пытаемся открыть
 
             if (mutex is null)  // первый запуск экземпляра окна

@@ -1,0 +1,35 @@
+﻿<Window x:Class="SPNP.ChainingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SPNP"
+        mc:Ignorable="d"
+        Title="ChainingWindow" Height="450" Width="400" WindowStartupLocation="CenterScreen">
+    <StackPanel>
+        <TextBlock Text="Продолжение задач" HorizontalAlignment="Center"/>
+        
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button x:Name="StartBtn1" Content="Start" Click="StartBtn1_Click"/>
+            <StackPanel Orientation="Vertical" Margin="0 15">
+                <ProgressBar Width="280" x:Name="progressBar10" Height="15" Margin="8 5"/>
+                <ProgressBar Width="280" x:Name="progressBar11" Height="15" Margin="8 5"/>
+                <ProgressBar Width="280" x:Name="progressBar12" Height="15" Margin="8 5"/>
+            </StackPanel>
+            <Button Content="Stop" x:Name="StopBtn1" Click="StopBtn1_Click"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button x:Name="StartBtn2" Content="Start" Click="StartBtn2_Click"/>
+            <StackPanel Orientation="Vertical" Margin="0 15">
+                <ProgressBar Width="280" x:Name="progressBar20" Height="15" Margin="8 5"/>
+                <ProgressBar Width="280" x:Name="progressBar21" Height="15" Margin="8 5"/>
+                <ProgressBar Width="280" x:Name="progressBar22" Height="15" Margin="8 5"/>
+            </StackPanel>
+            <Button Content="Stop" x:Name="StopBtn2" Click="StopBtn2_Click"/>
+        </StackPanel>
+        
+        <Button x:Name="StartBtn3" Content="Start" Margin="10" Click="StartBtn3_Click"/>
+        <TextBlock x:Name="logTextBlock"/>
+    </StackPanel>
+</Window>
