@@ -43,6 +43,9 @@
             <Button Content="Stop" x:Name="StopBtn3" Click="StopBtn3_Click"/>
         </StackPanel>
 
+        <Button Content="START1" x:Name="StartBtnTest1" Click="StartBtnTest1_Click"/>
+        <Button Content="START2" x:Name="StartBtnTest2" Click="StartBtnTest2_Click"/>
+
     </StackPanel>
 
 </Window>

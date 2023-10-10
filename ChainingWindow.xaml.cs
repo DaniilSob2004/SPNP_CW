@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Input;
 
 namespace SPNP
 {
@@ -22,12 +16,11 @@ namespace SPNP
         private CancellationTokenSource cts = null!;
         private void StartBtn1_Click(object sender, RoutedEventArgs e)
         {
-            if (cts is null || cts.IsCancellationRequested)  // если другие задачи не выполняются
+            if (cts is null || cts.Token.IsCancellationRequested)  // если другие задачи не выполняются
                 cts = new CancellationTokenSource();
-            else
-                return;
+            else return;
 
-            var task10 = 
+            var task10 =
                 ShowProgress(progressBar10, cts.Token)  // ShowProgress - возвращает Task
                 .ContinueWith(task10 =>     // к нему задаём продолжение
                     ShowProgress(progressBar11, cts.Token)
@@ -52,10 +45,9 @@ namespace SPNP
             // 10-11-12
             // 20-21-22
 
-            if (cts is null || cts.IsCancellationRequested)  // если другие задачи не выполняются
+            if (cts is null || cts.Token.IsCancellationRequested)  // если другие задачи не выполняются
                 cts = new CancellationTokenSource();
-            else
-                return;
+            else return;
 
             var task10 = ShowProgress(progressBar10, cts.Token);
             var task20 = ShowProgress(progressBar20, cts.Token);
@@ -101,7 +93,7 @@ namespace SPNP
             string str = "";
 
             // Первый способ (лесенкой)
-            //AddHello(str)
+            //await AddHello(str)
             //    .ContinueWith(task =>
             //    {
             //        string res = task.Result;
@@ -130,7 +122,7 @@ namespace SPNP
                 })
                 .Unwrap()  // снять одну "обёртку" Task<>, без неё task2 - Task<taskW> = Task<Task<string>>
                            // а с ней - task2 - Task<string> (без одной обёртки)
-                .ContinueWith(task2 =>  
+                .ContinueWith(task2 =>
                 {
                     string res = task2.Result;  // без Unwrap task2.Result.Result
                     Dispatcher.Invoke(() => logTextBlock.Text = res);

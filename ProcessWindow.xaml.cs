@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
-using System.Security.Principal;
 using System.Threading;
 
 namespace SPNP
@@ -28,24 +23,23 @@ namespace SPNP
         public ProcessWindow()
         {
             CheckPreviousLunch();
-
             InitializeComponent();
             Processes = new ObservableCollection<ProcessInfo>();
             isHandled = false;
             this.DataContext = this;
         }
 
+        #region Mutex
         private void CheckPreviousLunch()
         {
             // Синхронизация между процессами
-            // Если работа выполняется в одном процессе, то даже разные потоки могут иметь доступ к общим ресурсам,
-            // в том числе ресурсов синхронизации.
+            // Если работа выполняется в одном процессе, то даже разные потоки могут иметь доступ к общим ресурсам, в том числе ресурсов синхронизации.
             // Когда язык идёт про разные процессы, то единым способом разделить ресурс представляется ОС.
             // Она позволяет регистрировать ресурсы по имени, Мьютекс.
             // Mutex это объект синхронизации, то есть true - закрываем mutex (доступ из других потоков не будет).
 
-            try  // Mutex регистрируется при первом запуске окна
-            {    // поэтому он может быть уже существующим в системе
+            try  // Mutex регистрируется при первом запуске окна поэтому он может быть уже существующим в системе
+            {
                 mutex = Mutex.OpenExisting(mutexName);  // пытаемся открыть
             }
             catch { }
@@ -55,7 +49,6 @@ namespace SPNP
                 if (!mutex.WaitOne(1))  // проверка на закрытость - попытка ждать его небольшое время
                 {   // не позже чем 1 мс WaitOne(1) вернёт false, если Mutex не освободился
                     // или успешно переведёт его в закрытое состояние (и вернёт true).
-                    // дальнейший код - в случае работы другого окна
                     MessageBox.Show("Запущен другой экземпляр окна");
                     // остановить конструктор можно только исключением
                     throw new ApplicationException();  // не забыть try-catch при создании данного окна
@@ -72,13 +65,15 @@ namespace SPNP
         {
             mutex?.ReleaseMutex();  // освобождаем mutex - другие процессы смогут открывать свои окна
         }
+        #endregion
 
 
         #region Работа с процессами
         private void ShowProcesses_Click(object sender, RoutedEventArgs e)
         {
-            Process[] processes = Process.GetProcesses();
             treeViewProc.Items.Clear();
+
+            Process[] processes = Process.GetProcesses();
             string prevName = "";
             TreeViewItem? item = null;
             foreach (Process process in processes.OrderBy(p => p.ProcessName))
@@ -91,7 +86,7 @@ namespace SPNP
                 }
                 var subItem = new TreeViewItem()
                 {
-                    Header = String.Format("{0} {1}", process.Id, process.ProcessName),
+                    Header = String.Format("{0} {1}", process.Id, prevName),
                     Tag = process
                 };
                 subItem.MouseDoubleClick += TreeViewItem_MouseDoubleClick;
@@ -270,6 +265,7 @@ namespace SPNP
         private void BtnStartNotepad_Click(object sender, RoutedEventArgs e)
         {
             notepadProcess ??= Process.Start("notepad.exe");
+            // это оператор присваивания с null-объединением, он использ. для присвоения переменной значения только в том случае, если она имеет значение null
         }
 
         private void BtnStopNotepad_Click(object sender, RoutedEventArgs e)

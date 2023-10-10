@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Input;
 using System.Windows.Media;
 
 namespace SPNP
@@ -29,7 +24,7 @@ namespace SPNP
         {
             cancellationTokenSource = new CancellationTokenSource();
             taskCountActive = 0;
-            RunProgressCancellable(progressBar10, cancellationTokenSource.Token);  // fire-and-forget
+            RunProgressCancellable(progressBar10, cancellationTokenSource.Token);  // fire-and-forget -> запустили и забыли
             RunProgressCancellable(progressBar11, cancellationTokenSource.Token, 4);
             RunProgressCancellable(progressBar12, cancellationTokenSource.Token, 2);
         }
@@ -57,9 +52,9 @@ namespace SPNP
                 // rollback
                 if (progressBar.Value < 100)
                 {
+                    progressBar.Foreground = Brushes.Tomato;
                     for (int i = (int)progressBar.Value / 10; i > 0; i--)
                     {
-                        progressBar.Foreground = Brushes.Tomato;
                         progressBar.Value -= 10;
                         await Task.Delay(1000 * time / 10);
                     }
@@ -104,21 +99,19 @@ namespace SPNP
             {
                 progressBar.Value += 10;
                 await Task.Delay(1000 * time / 10);
-
-                if (token.IsCancellationRequested)
-                {
-                    break;
-                }
+                if (token.IsCancellationRequested) break;
             }
         }
         #endregion
 
 
-        #region void метод, параллельная работа, отмена, использование await Task.Run()
+        #region void метод, последовательная работа, отмена, использование await Task.Run()
         private async void StartBtn3_Click(object sender, RoutedEventArgs e)
         {
             ClearProgressBar(progressBar30, progressBar31, progressBar32);
             cancellationTokenSource = new CancellationTokenSource();
+
+            // !!! Всё равно не работает
             await Task.Run(() => RunProgress(progressBar30, cancellationTokenSource.Token));
             await Task.Run(() => RunProgress(progressBar31, cancellationTokenSource.Token, 4));
             await Task.Run(() => RunProgress(progressBar32, cancellationTokenSource.Token, 2));
@@ -135,11 +128,7 @@ namespace SPNP
             {
                 Dispatcher.Invoke(() => progressBar.Value += 10);
                 await Task.Delay(1000 * time / 10);
-
-                if (token.IsCancellationRequested)
-                {
-                    break;
-                }
+                if (token.IsCancellationRequested) break;
             }
         }
         #endregion
@@ -147,10 +136,22 @@ namespace SPNP
 
         private void ClearProgressBar(params ProgressBar[] progressBars)
         {
-            foreach (var pb in progressBars)
-            {
-                pb.Value = 0;
-            }
+            foreach (var pb in progressBars) pb.Value = 0;
         }
+
+
+        #region Иллюстрация того, что await не блокирует выполнение других обработчиков
+        private async void StartBtnTest1_Click(object sender, RoutedEventArgs e)
+        {
+            await Task.Delay(5000);
+            MessageBox.Show("Button 1");
+        }
+
+        private async void StartBtnTest2_Click(object sender, RoutedEventArgs e)
+        {
+            await Task.Delay(3000);
+            MessageBox.Show("Button 2");
+        }
+        #endregion
     }
 }

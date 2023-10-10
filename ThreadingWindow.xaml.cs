@@ -1,16 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace SPNP
 {
@@ -25,9 +16,10 @@ namespace SPNP
             InitializeComponent();
         }
 
+        #region Использование Mutex
         private void CheckPreviousLunch()
         {
-            // перенести в MainWindow
+            // перенести в MainWindow (потому что конструктор уже создаёт окно и процесс остаётся запущенным)
             try { mutex = Mutex.OpenExisting(mutexName); } catch { }  // пытаемся открыть
 
             if (mutex is null)  // первый запуск экземпляра окна
@@ -45,6 +37,7 @@ namespace SPNP
         {
             mutex?.ReleaseMutex();  // освобождаем
         }
+        #endregion
 
 
 
@@ -58,13 +51,7 @@ namespace SPNP
                 progressBar1.Value = i * 10;
                 Thread.Sleep(300);
             }
-            // обновление окна - это тоже одна с событий, поэтому бегунок
-            // отображается сразу заполнением, а не пошагово (в цикле)
-        }
-
-        internal static void Sleep(int v)
-        {
-            throw new NotImplementedException();
+            // обновление окна - это тоже одна с событий, поэтому бегунок отображается сразу заполнением, а не пошагово(в цикле)
         }
 
         private void BtnStop1_Click(object sender, RoutedEventArgs e)
@@ -80,19 +67,15 @@ namespace SPNP
             new Thread(IncrementProgress2).Start();
         }
 
-        private void BtnStop2_Click_1(object sender, RoutedEventArgs e)
-        {
-
-        }
+        private void BtnStop2_Click(object sender, RoutedEventArgs e) { }
 
         private void IncrementProgress2()
         {
-            // Проблема - с данного потока нельзя изменять элементы, которые принадлежат другому потоку.
-            // Для доступа к элементам интерфейса (окна) следует делегировать выполнение изменений к UI потоку
-            // progressBar2.Value = i * 10;  // здесь будет ошибка
+            // проблема - с данного потока нельзя изменять элементы, которые принадлежат другому потоку.
+            // для доступа к элементам интерфейса(окна) следует делегировать выполнение изменений к UI потоку
             for (int i = 0; i <= 10; i++)
             {
-                progressBar2.Value = i * 10;
+                progressBar2.Value = i * 10;  // здесь будет ошибка
                 Thread.Sleep(300);
             }
         }
@@ -116,9 +99,7 @@ namespace SPNP
             for (int i = 0; i <= 10 && !IsStopped3; i++)
             {
                 // делегирование выполнения действия(лямбды) к оконному(UI) потоку
-                Dispatcher.Invoke(
-                    () => progressBar3.Value = i * 10
-                );
+                Dispatcher.Invoke(() => progressBar3.Value = i * 10);
                 Thread.Sleep(300);
             }
         }
@@ -145,6 +126,7 @@ namespace SPNP
 
         private void StopHandle()
         {
+            MessageBox.Show("HERE");
             IsStopped4 = true;
             thread4 = null;
             btnStart4.IsEnabled = true;
@@ -158,20 +140,17 @@ namespace SPNP
         {
             for (int i = 0; i <= 10 && !IsStopped4; i++)
             {
-                // делегирование выполнения действия(лямбды) к оконному(UI) потоку
-                Dispatcher.Invoke(
-                    () => progressBar4.Value = i * 10
-                );
+                Dispatcher.Invoke(() => progressBar4.Value = i * 10);
                 Thread.Sleep(300);
             }
-            Dispatcher.Invoke(StopHandle);
+            if (!IsStopped4)  // проверка, чтобы два раза не вызывать StopHandle() (если было нажато Stop)
+                Dispatcher.Invoke(StopHandle);
         }
         #endregion
 
         #region BTN5 Передача данных в поток + современная остановка потоков с использованием токенов
         private Thread? thread5;
-        // Остановка потоков - современный подход, 
-        CancellationTokenSource cts = null!;  // источник токенов отмены
+        CancellationTokenSource cts = null!;  // источник токенов отмены (современный подход)
         private void BtnStart5_Click(object sender, RoutedEventArgs e)
         {
             int workTime = Convert.ToInt32(workTimeTextBox.Text);
@@ -179,10 +158,9 @@ namespace SPNP
             cts = new CancellationTokenSource();  // новый источник
             thread5.Start(new ThreadData5()  // объект для потока передаётся в параметр Start()
             {
-                WorkTine = workTime,
+                WorkTime = workTime,
                 CancellToken = cts.Token  // передаём токен
-            });  
-            // передаём в параметр объект типа ThreadData5
+            });
         }
 
         private void BtnStop5_Click(object sender, RoutedEventArgs e)
@@ -202,18 +180,12 @@ namespace SPNP
             {
                 for (int i = 0; i <= 10; i++)
                 {
-                    // делегирование выполнения действия(лямбды) к оконному(UI) потоку
-                    Dispatcher.Invoke(
-                        () => progressBar5.Value = i * 10
-                    );
-                    Thread.Sleep(100 * data.WorkTine);  // использование аргумента
+                    Dispatcher.Invoke(() => progressBar5.Value = i * 10);
+                    Thread.Sleep(100 * data.WorkTime);  // использование аргумента
 
-                    // задача проверки токена на отмену - часть работы потока (отмена не влияет на поток, если мы это будем игнорировать)
+                    // проверка токена на отмену - часть работы потока (отмена не влияет на поток, если мы это будем игнорировать)
                     // 1) способ
-                    if (data.CancellToken.IsCancellationRequested)
-                    {
-                        break;
-                    }
+                    if (data.CancellToken.IsCancellationRequested) break;
                     // 2 способ, с помощью исключения
                     //data.CancellToken.ThrowIfCancellationRequested();
                 }
@@ -227,7 +199,7 @@ namespace SPNP
         // пользовательский тип для передачи данных в параметр потоку
         class ThreadData5
         {
-            public int WorkTine { get; set; }
+            public int WorkTime { get; set; }
             public CancellationToken CancellToken { get; set; }
             // токен, созданный источником (CTS), передаётся вместе с данными в поток
         }
@@ -303,10 +275,7 @@ namespace SPNP
                         threadProgress.CancellToken.ThrowIfCancellationRequested();
                     }
                 }
-                catch (OperationCanceledException)
-                {
-                    //MessageBox.Show("Работа потоков отменена!");
-                }
+                catch (OperationCanceledException) {}  // работа потоков отменена
             }
         }
 

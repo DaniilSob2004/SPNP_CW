@@ -15,6 +15,7 @@
         <Button x:Name="CancellingBtn" Content="Отмена задачы" Margin="20,8" Click="CancellingBtn_Click"/>
         <Button x:Name="ProcessBtn" Content="Процессы" Margin="20,8" Click="ProcessBtn_Click"/>
         <Button x:Name="ChainingBtn" Content="Нитки. Продолжение" Margin="20,8" Click="ChainingBtn_Click"/>
+        <Button x:Name="DDLBtn" Content="DDL" Margin="20,8" Click="DDLBtn_Click"/>
     </StackPanel>
     
 </Window>

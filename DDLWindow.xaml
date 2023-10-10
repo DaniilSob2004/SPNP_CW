@@ -1,0 +1,16 @@
+﻿<Window x:Class="SPNP.DLLWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SPNP"
+        mc:Ignorable="d"
+        Title="DDLWindow" Height="450" Width="300" WindowStartupLocation="CenterScreen">
+    
+    <StackPanel>
+        <Button x:Name="BtnAlert" Content="Alert" Margin="15 5" Click="BtnAlert_Click"/>
+        <Button x:Name="BtnNewThread" Content="Thread" Margin="15 5" Click="BtnNewThread_Click"/>
+        <Button x:Name="BtnSound" Content="Sound" Margin="15 5" Click="BtnSound_Click"/>
+    </StackPanel>
+    
+</Window>

@@ -1,18 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-
 namespace SPNP
 {
     public partial class TaskWindow : Window
@@ -25,6 +15,8 @@ namespace SPNP
         #region Старый стиль, использование класса Task
         private void DemoBtn1_Click(object sender, RoutedEventArgs e)
         {
+            textBlockLog.Text = "";
+
             // Task запускается в отдельном потоке
             Task task = new Task(demo1);  // объект и запуск
             task.Start();
@@ -45,6 +37,8 @@ namespace SPNP
         // WPF позволяет создавать и вызывать async обработчики событий
         private async void DemoBtn2_Click(object sender, RoutedEventArgs e)
         {
+            textBlockLog.Text = "";
+
             Task<string> task = demo2();  // метод возвращает Task в "рабочем" состоянии
             textBlockLog.Text += $"demo2 work1\n";  // здесь то, что может выполняться паралельно (пока выполняется код в async методе demo2())
             textBlockLog.Text += $"demo2 work2\n";
@@ -85,10 +79,7 @@ namespace SPNP
                 ClearProgressBar();  // обнуляем PB
                 IsWork = false;
             }
-            else
-            {
-                MessageBox.Show("PB заняты!");
-            }
+            else MessageBox.Show("PB заняты!");
         }
 
         private async void StartParallel_Click(object sender, RoutedEventArgs e)
@@ -106,10 +97,7 @@ namespace SPNP
                 ClearProgressBar();  // обнуляем PB
                 IsWork = false;
             }
-            else
-            {
-                MessageBox.Show("PB заняты!");
-            }
+            else MessageBox.Show("PB заняты!");
         }
 
         private async Task AddProgressBar(ProgressWork progressWork)

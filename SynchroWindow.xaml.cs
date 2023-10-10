@@ -1,17 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace SPNP
 {
@@ -31,6 +20,7 @@ namespace SPNP
             InitializeComponent();
         }
 
+        #region Mutex
         private void Window_Closed(object sender, EventArgs e)
         {
             mutex?.ReleaseMutex();
@@ -48,14 +38,16 @@ namespace SPNP
                 if (!mutex.WaitOne(1))  // mutex закрытый
                 {
                     // запускаем окно таймер
-                    if (new CountDownWindow(mutex).ShowDialog() != true)  // время вышло
+                    var dialog = new CountDownWindow(mutex);
+                    if (dialog.ShowDialog() != true)  // время вышло
                     {
                         throw new ApplicationException();
                     }
-                    mutex.WaitOne();
                 }
             }
         }
+        #endregion
+
 
 
         private void StartBtn_Click(object sender, RoutedEventArgs e)
@@ -80,11 +72,7 @@ namespace SPNP
             Thread.Sleep(200);  // ~запрос
             localSum *= 1.1;  // 10%
             sum = localSum;
-            Dispatcher.Invoke(() =>
-            {
-                logTextBlock.Text += $"{sum}\n";
-            });
-
+            Dispatcher.Invoke(() => logTextBlock.Text += $"{sum}\n");
             // Проблема: все потоки выводят отдно и то же число - 110
             // Задержка выделяет проблему гарантируя, что все потоки начинаются со 100
             // Это илюстрирует общую проблему асинхронных задач - при работе с общим ресурсом, необходима синхронизация.
@@ -97,36 +85,25 @@ namespace SPNP
             double localSum = sum;
             localSum *= 1.1;  // 10%
             sum = localSum;
-            Dispatcher.Invoke(() =>
-            {
-                logTextBlock.Text += $"{sum}\n";
-            });
-
+            Dispatcher.Invoke(() => logTextBlock.Text += $"{sum}\n");
             // Перенос операции, уменьшает эффект, но не избавляется от него.
             // Числа выводятся разные, но с дублированием, вместо пошагового увеличения
         }
-
 
         private object sumLocker = new();  // объект сихронизации
         private void AddPercent3()
         {
             // метод, который имитирует обращение к сети с получением данных про инфляцию за месяц и добавляет её до общей суммы
-            lock (sumLocker)  // блок синхронизации (lock), переводит sunLocker в "закрытое" состояние
+            lock (sumLocker)  // блок синхронизации (lock), переводит sumLocker в "закрытое" состояние
             {
                 double localSum = sum;
                 Thread.Sleep(200);  // ~запрос
                 localSum *= 1.1;  // 10%
                 sum = localSum;
-                Dispatcher.Invoke(() =>
-                {
-                    logTextBlock.Text += $"{sum}\n";
-                });
-            }  // завершение блока "открывает" sunLocker
-
-            // пока sunLocker "закрытый", другие инструкции с блоком lock не начинают работу,
-            // ожидая на "открытия" объекта синхронизации (sumLocker)
-
-            // но вмещение всего тела метода у синхроблок производит к полной сериализации работы - теряется асинхронность
+                Dispatcher.Invoke(() => logTextBlock.Text += $"{sum}\n");
+            }  // завершение блока "открывает" sumLocker
+            // пока sumLocker "закрытый", другие инструкции с блоком lock не начинают работу, ожидая на "открытия" объекта синхронизации (sumLocker)
+            // но вмещение всего тела метода в синхроблок производит к полной сериализации работы - теряется асинхронность
         }
 
         private void AddPercent4()
@@ -138,11 +115,8 @@ namespace SPNP
             {
                 sum *= 1.1;
             }
-
-            Dispatcher.Invoke(() =>  // вывод - за транзакцией, поэтому результаты непредсказуемые, но последний результат будет правильный
-            {
-                logTextBlock.Text += $"{sum}\n";
-            });
+            // вывод - за транзакцией, поэтому результаты непредсказуемые, но последний результат будет правильный
+            Dispatcher.Invoke(() => logTextBlock.Text += $"{sum}\n");
         }
 
         private void AddPercent5()
@@ -155,8 +129,8 @@ namespace SPNP
             {
                 localSum = sum *= 1.1;  // копия вычисленной суммы в локальную переменную
             }
-
-            Dispatcher.Invoke(() =>  // вывод - за транзакцией, но с локальной переменной, которая не разделяется с другими потоками
+            // вывод - за транзакцией, но с локальной переменной, которая не разделяется с другими потоками
+            Dispatcher.Invoke(() =>
             {
                 logTextBlock.Text += $"{localSum}\n";  // порядок этих операций тоже свободный, но все будут выведены
             });
@@ -168,61 +142,52 @@ namespace SPNP
             // и выводит месяц(который посчитался уже), с помощью переданного параметра
 
             var monthData = data as MonthData;  // преобразование
-
             Thread.Sleep(200);  // ~запрос
-
             double localSum;
             lock (sumLocker)  // транзакция - смена общего ресурса
             {
                 localSum = sum *= 1.1;  // копия вычисленной суммы в локальную переменную
             }
-
-            Dispatcher.Invoke(() =>  // вывод - за транзакцией, но с локальной переменной, которая не разделяется с другими потоками
-            {
-                logTextBlock.Text += $"{monthData?.Month}) {localSum}\n";  // порядок этих операций тоже свободный, но все будут выведены
-            });
+            // вывод - за транзакцией, но с локальной переменной, которая не разделяется с другими потоками
+            Dispatcher.Invoke(() => logTextBlock.Text += $"{monthData?.Month}) {localSum}\n");  // порядок этих операций тоже свободный, но все будут выведены
         }
 
         private void AddPercent7(object? data)
         {
             // метод, который имитирует обращение к сети с получением данных про инфляцию за месяц и добавляет её до общей суммы
-            // и выводит месяц(который посчитался уже), с помощью переданного параметра
+            // и выводит месяц(который посчитался уже), с помощью переданного параметра.
+            // также выводим итоговое значение
 
             var monthData = data as MonthData;  // преобразование
-
             Thread.Sleep(200);  // ~запрос
-
             double localSum;
             lock (sumLocker)  // транзакция - смена общего ресурса
             {
                 localSum = sum *= 1.1;  // копия вычисленной суммы в локальную переменную
             }
+            // вывод - за транзакцией, но с локальной переменной, которая не разделяется с другими потоками
+            Dispatcher.Invoke(() => logTextBlock.Text += $"{monthData?.Month}) {localSum}\n");
 
-            Dispatcher.Invoke(() =>  // вывод - за транзакцией, но с локальной переменной, которая не разделяется с другими потоками
-            {
-                logTextBlock.Text += $"{monthData?.Month}) {localSum}\n";  // порядок этих операций тоже свободный,
-                                                                           // но все будут выведены
-            });
-
-            // из-за того, что порядок не гарантируется, номер месяца не годится для определения
-            // последнего потока, используем уменьшение счётчика потоков
+            // из-за того, что порядок не гарантируется, номер месяца не годится для определения последнего потока, используем уменьшение счётчика потоков
             threadCount--;
             Thread.Sleep(1);  // если добавить тут паузу, то все потоки попадут под это условие, и каждый поток выведет итоговую запись
             if (threadCount == 0)
             {
-                // добавляем итоговую запись
-                Dispatcher.Invoke(() =>
-                {
-                    logTextBlock.Text += $"------------------\nresult = {sum}\n";
-                });
+                Dispatcher.Invoke(() => logTextBlock.Text += $"------------------\nresult = {sum}\n");  // добавляем итоговую запись
             }
         }
 
+
+
         // ДЗ
-        private object sumHwLocker = new();  // объект сихронизации
-        private object countHwLocker = new();  // объект сихронизации
+        private object sumHwLocker = new();  // объекты сихронизации
+        private object countHwLocker = new();
         private void AddPercentHW(object? data)
         {
+            // метод, который имитирует обращение к сети с получением данных про инфляцию за месяц и добавляет её до общей суммы
+            // и выводит месяц(который посчитался уже), с помощью переданного параметра
+            // также выводим итоговое значение
+
             var months = data as MonthData;  // преобразовываем
             Thread.Sleep(200);  // запрос
 
@@ -231,25 +196,20 @@ namespace SPNP
             {
                 localSum = sum += (sum * months!.Percent / 100);  // считаем процент и прибавляем
             }
-            Dispatcher.Invoke(() =>
-            {
-                logTextBlock.Text += $"{months?.Month}) {localSum} (+{months?.Percent}%)\n";
-            });
+            Dispatcher.Invoke(() => logTextBlock.Text += $"{months?.Month}) {localSum} (+{months?.Percent}%)\n");
 
             int localCount;  // для каждого потока создаётся локальная переменная
             lock (countHwLocker)  // ещё блок синхронизации для использ. общего ресурса (поля threadCount)
             {
                 localCount = --threadCount;
             }
-            Thread.Sleep(1);
+            Thread.Sleep(1);  // пауза (для проверки)
             if (localCount == 0)  // если это последний поток, то выводим результат
             {
-                Dispatcher.Invoke(() =>
-                {
-                    logTextBlock.Text += $"------------------\nresult = {sum}\n";  // вывод результата
-                });
+                Dispatcher.Invoke(() => logTextBlock.Text += $"------------------\nresult = {sum}\n");  // вывод результата
             }
         }
+
 
 
         // семафоры
@@ -263,10 +223,7 @@ namespace SPNP
             double localSum = sum *= 1.1;
             semaphore.Release();  // освобождаем одну очередь
 
-            Dispatcher.Invoke(() =>
-            {
-                logTextBlock.Text += $"{monthData?.Month}) {localSum}\n";
-            });
+            Dispatcher.Invoke(() => logTextBlock.Text += $"{monthData?.Month}) {localSum}\n");
         }
 
         class MonthData

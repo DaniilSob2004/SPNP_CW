@@ -50,7 +50,7 @@ namespace SPNP
             else
             {
                 mutex.ReleaseMutex();
-                Dispatcher.Invoke(() => DialogResult = true);
+                DialogResult = true;
             }
         }
     }

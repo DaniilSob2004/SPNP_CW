@@ -1,6 +1,5 @@
 ﻿Многозадачность
-Это способы асинхронного программирования с использованием задач - объектов языка
-программирования или платформы (.NET)
+Это способы асинхронного программирования с использованием задач - объектов языка программирования или платформы (.NET)
 Реализация многозадачности не требует многопоточности (хотя часто на ней базируется).
 
 Старый стиль - использования класса Task
@@ -8,18 +7,26 @@
   await - может использоваться только в async методах.
           ждёт выполнение метода и "снимает" оболочку Task<> с полученного результата
 
- main              wait all				| await Task.WhenAll(
+private async Task<TYPE> method() {}  // метод возвращает задачу и тип TYPE
+private async Task method() {}  // метод возвращает задачу и тип void
+
+Task<TYPE> task = method();  // метод возвращает Task в "рабочем" состоянии
+// здесь то, что может выполняться паралельно (пока выполняется код в async методе method())
+TYPE value = await task;  // ждёт перехода Task в "завершенное" состояние и делает распаковку (из Task<TYPE> в TYPE)
+
+// Варианты завершения задач
+ main              wait all		        | await Task.WhenAll(
 --------|------.............|-final-	|     RunProgressWaitable(ProgressBar10),
-		|--------------					|     RunProgressWaitable(ProgressBar11, 4),
-		|------------------	|			|     RunProgressWaitable(ProgressBar12, 2)
-		|----------						| );
-										| MessageBox.Show("Done");
+	    |--------------			        |     RunProgressWaitable(ProgressBar11, 4),
+	    |------------------ |		    |     RunProgressWaitable(ProgressBar12, 2)
+	    |----------			            | );
+					                    | MessageBox.Show("Done");
 
  main
---------|------|						| С счётчиком задач или с другим общим ресурсом
-		|--------------					|
-		|------------------	| -final-	| 
-		|----------						| 
+--------|------|			            | С счётчиком задач или с другим общим ресурсом
+	    |--------------		            |
+	    |------------------ | -final-	| 
+	    |----------			            | 
 
 
 Различия задач и потоков:
@@ -37,6 +44,7 @@
     await RunProgressWaitable(ProgressBar11, 4);
     await RunProgressWaitable(ProgressBar12, 2);
 
+ // НЕ РАБОТАЕТ!!!
  Последовательное исполнение с void методами - обертка Task.Run (но в такой схеме требуется Invoke дл UI):
     await Task.Run(() => RunProgress(ProgressBar10));
     await Task.Run(() => RunProgress(ProgressBar11, 4));
